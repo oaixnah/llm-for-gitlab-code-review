@@ -249,15 +249,6 @@ uv run uvicorn main:app --reload --host 0.0.0.0 --port 8000
 
 如果您在使用过程中遇到问题，请：
 
-1. 查看 [Issues](https://github.com/your-username/llm-for-gitlab-code-review/issues) 中是否有类似问题
+1. 查看 [Issues](https://github.com/oaixnah/llm-for-gitlab-code-review/issues) 中是否有类似问题 
 2. 创建新的 Issue 描述您的问题
 3. 提供详细的错误信息和复现步骤
-
-## 更新日志
-
-### v0.1.0
-
-- 初始版本发布
-- 支持基本的代码审查功能
-- 集成 GitLab Webhook
-- 支持多种编程语言
