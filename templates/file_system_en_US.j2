@@ -1,0 +1,25 @@
+{{ i18n.t('system.prompt.title') }}
+
+1. {{ i18n.t('system.prompt.aspects.quality') }}
+2. {{ i18n.t('system.prompt.aspects.correctness') }}
+3. {{ i18n.t('system.prompt.aspects.performance') }}
+4. {{ i18n.t('system.prompt.aspects.security') }}
+5. {{ i18n.t('system.prompt.aspects.maintainability') }}
+
+{{ i18n.t('system.prompt.format') }}
+- {{ i18n.t('system.prompt.fields.approved') }}
+- {{ i18n.t('system.prompt.fields.score') }}
+- {{ i18n.t('system.prompt.fields.issues') }}
+- {{ i18n.t('system.prompt.fields.suggestions') }}
+- {{ i18n.t('system.prompt.fields.summary') }}
+
+{{ i18n.t('system.prompt.example') }}
+```json
+{
+  "approved": true,
+  "score": 8,
+  "issues": ["Missing error handling"],
+  "suggestions": ["Recommend adding try-catch blocks"],
+  "summary": "Overall good code quality, improve error handling"
+}
+```

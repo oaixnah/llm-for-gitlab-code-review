@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  # 主应用服务
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: llm-gitlab-code-review:latest
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=false
+      - GITLAB_URL=${GITLAB_URL}
+      - GITLAB_TOKEN=${GITLAB_TOKEN}
+      - GITLAB_WEBHOOK_SECRET=${GITLAB_WEBHOOK_SECRET}
+      - GITLAB_BOT_USERNAME=${GITLAB_BOT_USERNAME}
+      - MYSQL_HOST=${MYSQL_HOST}
+      - MYSQL_PORT=${MYSQL_PORT}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWD=${MYSQL_PASSWD}
+      - LLM_API_URL=${LLM_API_URL}
+      - LLM_API_KEY=${LLM_API_KEY}
+      - LLM_API_TYPE=${LLM_API_TYPE:-openai}
+      - LLM_MODEL=${LLM_MODEL}
+      - SENTRY_DSN=${SENTRY_DSN}
+      - SENTRY_ENV=${SENTRY_ENV}
+    # 指定容器名称
+    container_name: llm-gitlab-code-review
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "3"
+    restart: unless-stopped
+    networks:
+      - llm-gcr-network
+networks:
+  llm-gcr-network:
+    driver: bridge
