@@ -107,13 +107,13 @@ docker-compose up -d
 
 ```bash
 # 安装依赖
-pip install -r requirements.txt
+uv sync
 
 # 初始化数据库
-python -c "from models import Base; from config import engine; Base.metadata.create_all(engine)"
+uv run python -c "from models import Base; from config import engine; Base.metadata.create_all(engine)"
 
 # 启动服务
-uvicorn main:app --host 0.0.0.0 --port 8000
+uv run uvicorn main:app --host 0.0.0.0 --port 8000
 ```
 
 ### GitLab 配置
@@ -227,10 +227,10 @@ LOCALE=en_US
 
 ```bash
 # 安装开发依赖
-pip install -e .
+uv sync --dev
 
 # 启动开发服务器
-uvicorn main:app --reload --host 0.0.0.0 --port 8000
+uv run uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 ## 贡献指南
