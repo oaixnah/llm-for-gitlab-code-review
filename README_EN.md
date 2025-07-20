@@ -208,15 +208,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 If you encounter any issues while using this tool, please:
 
-1. Check if there are similar issues in [Issues](https://github.com/your-username/llm-for-gitlab-code-review/issues)
+1. Check if there are similar issues in [Issues](https://github.com/oaixnah/llm-for-gitlab-code-review/issues)
 2. Create a new Issue describing your problem
 3. Provide detailed error information and reproduction steps
-
-## Changelog
-
-### v0.1.0
-
-- Initial release
-- Support basic code review functionality
-- GitLab Webhook integration
-- Support multiple programming languages
