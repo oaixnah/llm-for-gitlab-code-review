@@ -103,13 +103,13 @@ docker-compose up -d
 
 ```bash
 # Install dependencies
-pip install -r requirements.txt
+uv sync
 
 # Initialize database
-python -c "from models import Base; from config import engine; Base.metadata.create_all(engine)"
+uv run python -c "from models import Base; from config import engine; Base.metadata.create_all(engine)"
 
 # Start service
-uvicorn main:app --host 0.0.0.0 --port 8000
+uv run uvicorn main:app --host 0.0.0.0 --port 8000
 ```
 
 ### GitLab Configuration
@@ -186,10 +186,10 @@ Used for service health status checking.
 
 ```bash
 # Install development dependencies
-pip install -e .
+uv sync --dev
 
 # Start development server
-uvicorn main:app --reload --host 0.0.0.0 --port 8000
+uv run uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 ## Contributing
