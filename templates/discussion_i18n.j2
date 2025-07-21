@@ -8,8 +8,10 @@
 
 {{ i18n.t('discussion.summary_title') }}
 
-{{ i18n.t('discussion.score_text') }}: {{ score }}/10。{{ summary }}
+{{ summary }}
+
+{{ i18n.t('discussion.score_text') }}: {{ score }} / 10
 
 ---
 
-{{ i18n.t('discussion.generated_by', model=model, duration=duration) }}
+<div align="center">{{ i18n.t('discussion.content_generated_by', model=model) }}</div>
