@@ -12,6 +12,8 @@
 - 💾 **数据持久化**: 使用 MySQL 存储审查记录和历史数据
 - 🚀 **高性能**: 支持并发处理，异步任务队列
 - 🐳 **容器化部署**: 提供 Docker 和 Docker Compose 部署方案
+- 🧪 **完整测试**: 包含单元测试、集成测试、性能测试的完整测试框架
+- 📝 **详细文档**: 提供国际化指南、测试指南等详细文档
 
 ## 支持的编程语言
 
@@ -46,7 +48,7 @@
 ### 环境要求
 
 - Python 3.13+
-- MySQL 5.7+
+- MySQL 5.7+ 或 SQLite（测试环境）
 - GitLab 实例（支持 Webhook）
 - LLM API 服务（OpenAI 兼容）
 
@@ -233,6 +235,29 @@ uv sync --dev
 uv run uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ```
 
+### 测试
+
+项目包含完整的测试框架，支持多种测试类型：
+
+```bash
+# 运行所有测试
+python run_tests.py --all
+
+# 运行单元测试
+python run_tests.py --unit
+
+# 运行集成测试
+python run_tests.py --integration
+
+# 运行性能测试
+python run_tests.py --performance
+
+# 使用 pytest 运行特定测试
+pytest tests/test_config.py -v
+```
+
+详细的测试指南请查看 [TESTING.md](TESTING.md)
+
 ## 贡献指南
 
 1. Fork 本项目
@@ -245,10 +270,16 @@ uv run uvicorn main:app --reload --host 0.0.0.0 --port 8000
 
 本项目采用 MIT 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情。
 
+## 文档
+
+- [国际化支持指南](INTERNATIONALIZATION.md) - 多语言界面配置和使用
+- [测试指南](TESTING.md) - 完整的测试框架使用说明
+- [支持的编程语言](SUPPORTED_LANGUAGES.md) - 详细的语言支持列表
+
 ## 支持
 
 如果您在使用过程中遇到问题，请：
 
-1. 查看 [Issues](https://github.com/oaixnah/llm-for-gitlab-code-review/issues) 中是否有类似问题 
+1. 查看相关文档和 [Issues](https://github.com/oaixnah/llm-for-gitlab-code-review/issues) 中是否有类似问题
 2. 创建新的 Issue 描述您的问题
 3. 提供详细的错误信息和复现步骤
