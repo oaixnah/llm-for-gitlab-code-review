@@ -27,11 +27,13 @@
     }
   },
   "discussion": {
-    "issues_title": "#### ⚠️ 发现的问题",
+    "issues_title": "#### ⚠️ 发现问题",
     "suggestions_title": "#### 💡 改进建议",
     "summary_title": "#### 📝 总结",
     "score_text": "**评分**",
-    "generated_by": "*此评论由 {model} 自动生成（耗时：{duration}s）。*"
+    "generated_by": "*此评论由 {model} 自动生成（耗时：{duration}s）。*",
+    "content_generated_by": "内容由 {model} 生成，仅供参考。",
+    "duration_text": "耗时 {duration}s"
   },
   "log": {
     "gitlab_connection_failed": "GitLab 连接失败",
