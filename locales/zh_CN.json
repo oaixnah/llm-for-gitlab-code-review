@@ -37,6 +37,7 @@
   },
   "log": {
     "gitlab_connection_failed": "GitLab 连接失败",
+    "gitlab_bot_user_not_found": "GitLab 机器人用户未找到",
     "ignore_event_type": "忽略事件类型",
     "webhook_processing_failed": "处理webhook失败",
     "event_missing_fields": "事件数据缺少必要字段",
@@ -45,13 +46,25 @@
     "project_not_participating": "项目 <{project}> 不参与审核，跳过处理",
     "mr_status_skip": "合并请求 {project} (!{iid}) 状态为 {state}，跳过处理",
     "mr_already_approved": "合并请求 {project} (!{iid}) 已被批准，跳过处理",
-    "mr_check_status_failed": "合并请求 {project} (!{iid}) 检查状态失败",
+    "mr_check_status_failed": "合并请求 {project} (!{iid}) 检查状态失败 {error}",
     "mr_action_start": "合并请求 {project} (!{iid}) {action} 开始处理",
     "mr_other_action": "其他合并请求动作: {action}，跳过处理",
     "mr_no_changes": "合并请求 {mr_info} 无文件变更，跳过处理",
     "mr_review_start": "合并请求 {mr_info} 开始代码评审，共 {count} 个文件",
     "mr_no_review_files": "合并请求 {mr_info} 无需评审的文件，跳过处理",
-    "mr_event_process_failed": "处理合并请求事件失败"
+    "mr_event_process_failed": "处理合并请求事件失败",
+    "file_review_failed": "合并请求 {mr_info} 文件 {file_path} 评审失败",
+    "mr_review_finish": "合并请求 {mr_info} 评审完成，通过 {approved_count}/{total_reviewed} 个文件",
+    "file_no_support": "合并请求 {mr_info} 文件 {file_path} 不支持，跳过处理",
+    "file_deleted": "合并请求 {mr_info} 文件 {file_path} 已删除，跳过处理",
+    "file_renamed": "合并请求 {mr_info} 文件 {file_path} 仅重命名无内容变更，跳过处理",
+    "discussion_resolved": "合并请求 {mr_info} 文件 {file_path} 的讨论已解决",
+    "discussion_approved": "合并请求 {mr_info} 文件 {file_path} 评审通过",
+    "discussion_rejected": "合并请求 {mr_info} 文件 {file_path} 评审未通过",
+    "discussion_created": "合并请求 {mr_info} 文件 {file_path} 讨论创建成功",
+    "create_file_limit_notification": "创建文件数量限制通知，文件数量: {file_count}",
+    "mr_all_files_approved": "合并请求 {mr_info} 所有文件评审通过",
+    "mr_approved": "合并请求 {mr_info} 已自动批准"
   },
   "status": {
     "accepted": "已接受",
@@ -63,6 +76,36 @@
   "response": {
     "merge_request_queued": "合并请求事件已排队处理",
     "event_not_handled": "事件类型 {event_type} 未处理",
-    "internal_server_error": "内部服务器错误"
+    "internal_server_error": "内部服务器错误",
+    "update_or_create_review_failed": "更新或创建评审记录失败，项目ID: {project_id}，合并请求ID: {merge_request_id}，错误: {error}",
+    "get_review_failed": "获取评审记录失败，项目ID: {project_id}，合并请求ID: {merge_request_id}，错误: {error}",
+    "get_discussion_id_failed": "获取讨论ID失败，项目ID: {project_id}，合并请求ID: {merge_request_id}，文件路径: {file_path}，错误: {error}",
+    "create_review_discussion_failed": "创建评审讨论失败，讨论ID: {discussion_id}，文件路径: {file_path}，错误: {error}",
+    "get_review_discussion_id_failed": "获取评审讨论记录ID失败，讨论ID: {discussion_id}，错误: {error}",
+    "create_review_file_record_failed": "创建评审文件记录失败，讨论ID: {discussion_id}，错误: {error}",
+    "create_review_file_llm_message_failed": "创建评审文件LLM消息失败，讨论ID: {discussion_id}，错误: {error}",
+    "get_review_file_llm_messages_failed": "获取评审文件LLM消息失败，讨论ID: {discussion_id}，错误: {error}",
+    "mr_review_failed": "合并请求 {mr_info} 评审失败，错误: {error}",
+    "review_file_failed": "文件 {file_path} 评审失败，错误: {error}",
+    "update_discussion_failed": "更新讨论失败，文件: {file_path}，错误: {error}",
+    "create_discussion_failed": "创建讨论失败，文件: {file_path}，错误: {error}",
+    "save_discussion_records_failed": "保存讨论记录失败，讨论ID: {discussion_id}，错误: {error}",
+    "resolve_discussion_failed": "解决讨论失败，文件: {file_path}，讨论ID: {discussion_id}，错误: {error}",
+    "create_file_limit_notification_failed": "创建文件数量限制通知失败，文件数量: {file_count}，错误: {error}",
+    "approve_merge_request_failed": "批准合并请求失败，{project_id}，错误: {error}",
+    "llm_service_error": "LLM评审服务异常: {error}",
+    "llm_service_retry_suggestion": "请检查LLM服务状态后重试",
+    "llm_service_error_summary": "LLM服务异常，无法完成评审"
+  },
+  "notification": {
+    "file_limit": {
+      "title": "📢 **文件变更数量过多通知**",
+      "content": "本次合并请求包含 **{file_count}** 个文件变更，超过了单次评审限制（20个文件）。",
+      "suggestions_title": "为了保证评审质量和系统性能，建议：",
+      "suggestion_1": "将大型变更拆分为多个较小的合并请求",
+      "suggestion_2": "确保每个合并请求专注于单一功能或修复",
+      "suggestion_3": "如有必要，可以手动触发部分文件的评审",
+      "footer": "如需强制评审，请联系管理员。"
+    }
   }
 }

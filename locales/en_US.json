@@ -37,6 +37,7 @@
   },
   "log": {
     "gitlab_connection_failed": "GitLab connection failed",
+    "gitlab_bot_user_not_found": "GitLab bot user not found",
     "ignore_event_type": "Ignoring event type",
     "webhook_processing_failed": "Webhook processing failed",
     "event_missing_fields": "Event data missing required fields",
@@ -45,13 +46,25 @@
     "project_not_participating": "Project <{project}> not participating in review, skipping",
     "mr_status_skip": "Merge request {project} (!{iid}) status is {state}, skipping",
     "mr_already_approved": "Merge request {project} (!{iid}) already approved, skipping",
-    "mr_check_status_failed": "Failed to check status of merge request {project} (!{iid})",
+    "mr_check_status_failed": "Failed to check status of merge request {project} (!{iid}) {error}",
     "mr_action_start": "Merge request {project} (!{iid}) {action} started processing",
     "mr_other_action": "Other merge request action: {action}, skipping",
     "mr_no_changes": "Merge request {mr_info} has no file changes, skipping",
     "mr_review_start": "Merge request {mr_info} started code review, {count} files total",
     "mr_no_review_files": "Merge request {mr_info} has no files to review, skipping",
-    "mr_event_process_failed": "Failed to process merge request event"
+    "mr_event_process_failed": "Failed to process merge request event",
+    "file_review_failed": "Merge request {mr_info} file {file_path} review failed",
+    "mr_review_finish": "Merge request {mr_info} review completed, {approved_count}/{total_reviewed} files approved",
+    "file_no_support": "Merge request {mr_info} file {file_path} not supported, skipping",
+    "file_deleted": "Merge request {mr_info} file {file_path} deleted, skipping",
+    "file_renamed": "Merge request {mr_info} file {file_path} only renamed with no content changes, skipping",
+    "discussion_resolved": "Merge request {mr_info} file {file_path} discussion resolved",
+    "discussion_approved": "Merge request {mr_info} file {file_path} review approved",
+    "discussion_rejected": "Merge request {mr_info} file {file_path} review rejected",
+    "discussion_created": "Merge request {mr_info} file {file_path} discussion created successfully",
+    "create_file_limit_notification": "Created file limit notification, file count: {file_count}",
+    "mr_all_files_approved": "Merge request {mr_info} all files approved",
+    "mr_approved": "Merge request {mr_info} automatically approved"
   },
   "status": {
     "accepted": "accepted",
@@ -63,6 +76,36 @@
   "response": {
     "merge_request_queued": "Merge request event queued for processing",
     "event_not_handled": "Event type {event_type} not handled",
-    "internal_server_error": "Internal server error"
+    "internal_server_error": "Internal server error",
+    "update_or_create_review_failed": "Failed to update or create review record, project ID: {project_id}, merge request ID: {merge_request_id}, error: {error}",
+    "get_review_failed": "Failed to get review record, project ID: {project_id}, merge request ID: {merge_request_id}, error: {error}",
+    "get_discussion_id_failed": "Failed to get discussion ID, project ID: {project_id}, merge request ID: {merge_request_id}, file path: {file_path}, error: {error}",
+    "create_review_discussion_failed": "Failed to create review discussion, discussion ID: {discussion_id}, file path: {file_path}, error: {error}",
+    "get_review_discussion_id_failed": "Failed to get review discussion record ID, discussion ID: {discussion_id}, error: {error}",
+    "create_review_file_record_failed": "Failed to create review file record, discussion ID: {discussion_id}, error: {error}",
+    "create_review_file_llm_message_failed": "Failed to create review file LLM message, discussion ID: {discussion_id}, error: {error}",
+    "get_review_file_llm_messages_failed": "Failed to get review file LLM messages, discussion ID: {discussion_id}, error: {error}",
+    "mr_review_failed": "Merge request {mr_info} review failed, error: {error}",
+    "review_file_failed": "File {file_path} review failed, error: {error}",
+    "update_discussion_failed": "Failed to update discussion, file: {file_path}, error: {error}",
+    "create_discussion_failed": "Failed to create discussion, file: {file_path}, error: {error}",
+    "save_discussion_records_failed": "Failed to save discussion records, discussion ID: {discussion_id}, error: {error}",
+    "resolve_discussion_failed": "Failed to resolve discussion, file: {file_path}, discussion ID: {discussion_id}, error: {error}",
+    "create_file_limit_notification_failed": "Failed to create file limit notification, file count: {file_count}, error: {error}",
+    "approve_merge_request_failed": "Failed to approve merge request, {project_id}, error: {error}",
+    "llm_service_error": "LLM review service error: {error}",
+    "llm_service_retry_suggestion": "Please check LLM service status and retry",
+    "llm_service_error_summary": "LLM service error, unable to complete review"
+  },
+  "notification": {
+    "file_limit": {
+      "title": "📢 **Too Many File Changes Notification**",
+      "content": "This merge request contains **{file_count}** file changes, exceeding the single review limit (20 files).",
+      "suggestions_title": "To ensure review quality and system performance, we recommend:",
+      "suggestion_1": "Split large changes into multiple smaller merge requests",
+      "suggestion_2": "Ensure each merge request focuses on a single feature or fix",
+      "suggestion_3": "If necessary, manually trigger partial file reviews",
+      "footer": "For forced review, please contact the administrator."
+    }
   }
 }
