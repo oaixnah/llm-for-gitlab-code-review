@@ -1,6 +1,5 @@
 import asyncio
 import logging
-from dataclasses import dataclass
 from enum import Enum
 from typing import Dict, Any, Optional, List
 
@@ -27,25 +26,6 @@ class ReviewStatus(Enum):
     REJECTED = 'rejected'
 
 
-class MergeRequestAction(Enum):
-    """合并请求动作枚举"""
-    OPEN = 'open'
-    UPDATE = 'update'
-    CLOSE = 'close'
-    REOPEN = 'reopen'
-
-
-@dataclass
-class ReviewResult:
-    """评审结果数据类"""
-    approved: bool
-    issues: List[str]
-    suggestions: List[str]
-    score: int
-    summary: str
-    duration: float
-
-
 class ReviewManager:
     """评审管理器类"""
     MAX_CONCURRENT_REVIEWS = 10  # 最大并发评审数量
@@ -63,6 +43,12 @@ class ReviewManager:
         """连接性检查"""
         try:
             self.gl.auth()
+            if bot := self.gl.users.list(username=settings.gitlab_bot_username):
+                self.reviewers = bot[0]
+            else:
+                logger.error(f"{i18n.t('log.gitlab_bot_user_not_found')}")
+                raise Exception(f"{i18n.t('log.gitlab_bot_user_not_found')}")
+
             return True
         except Exception as e:
             logger.error(f"{i18n.t('log.gitlab_connection_failed')}: {e}")
@@ -104,6 +90,7 @@ class ReviewManager:
             # 项目是否有效
             project = await self._get_project(project_id)
             if not project:
+                logger.warning(i18n.t('log.project_no_permission', project_id=project_id))
                 return False
 
             # 是否参与审核
@@ -168,7 +155,7 @@ class ReviewManager:
         except Exception as e:
             logger.error(i18n.t('log.mr_check_status_failed',
                                 project=project.path_with_namespace,
-                                iid=merge_request.iid) + f" {e}")
+                                iid=merge_request.iid), error=str(e))
             return False
 
     async def _dispatch_action(self, action: str, project: Project, merge_request: ProjectMergeRequest):
@@ -223,13 +210,15 @@ class ReviewManager:
             for i, result in enumerate(results):
                 if isinstance(result, Exception):
                     error_count += 1
-                    logger.error(f"文件评审异常: {result}")
+                    logger.error(i18n.t('log.file_review_failed', mr_info=mr_info,
+                                        file_path=change_files[i].get('new_path', '')))
                 elif result:
                     approved_count += 1
 
             total_reviewed = len(review_tasks) - error_count
             logger.info(
-                f"合并请求 {mr_info} 评审完成: {approved_count}/{total_reviewed} 个文件通过"
+                i18n.t('log.mr_review_finish', mr_info=mr_info, approved_count=approved_count,
+                       total_reviewed=total_reviewed)
             )
 
             # 如果所有文件都通过评审，自动批准
@@ -237,7 +226,7 @@ class ReviewManager:
                 await self._approve_merge_request(project, merge_request)
 
         except Exception as e:
-            logger.error(f"评审变更文件失败: {e}")
+            logger.error(i18n.t('response.mr_review_failed', mr_info=mr_info, error=str(e)))
             update_or_create_review(project.id, merge_request.iid, ReviewStatus.REJECTED.value)
 
     @staticmethod
@@ -251,17 +240,17 @@ class ReviewManager:
 
         # 检查文件类型支持
         if not is_supported_file(file_path):
-            logger.debug(f"合并请求 {mr_info} 文件 {file_path} 不支持，跳过处理")
+            logger.info(i18n.t('log.file_no_support', mr_info=mr_info, file_path=file_path))
             return False
 
         # 跳过删除的文件
         if change.get('deleted_file'):
-            logger.debug(f"合并请求 {mr_info} 文件 {file_path} 已删除，跳过处理")
+            logger.info(i18n.t('log.file_deleted', mr_info=mr_info, file_path=file_path))
             return False
 
         # 跳过重命名但内容未变更的文件
         if change.get('renamed_file') and not change.get('diff'):
-            logger.debug(f"合并请求 {mr_info} 文件 {file_path} 仅重命名无内容变更，跳过处理")
+            logger.info(i18n.t('log.file_renamed', mr_info=mr_info, file_path=file_path))
             return False
 
         return True
@@ -289,7 +278,7 @@ class ReviewManager:
                     )
 
             except Exception as e:
-                logger.error(f"评审文件 {file_path} 失败: {e}")
+                logger.error(i18n.t('response.review_file_failed', file_path=file_path, error=str(e)))
                 return False
 
     async def _update_existing_discussion(self, project: Project, merge_request: ProjectMergeRequest,
@@ -305,7 +294,7 @@ class ReviewManager:
 
             if discussion.get('resolved', False) or any(
                     note.get('resolved', False) for note in discussion.get('notes', [])):
-                logger.info(f"合并请求 {mr_info} 文件 {file_path} 的讨论已解决，跳过处理")
+                logger.info(i18n.t('log.discussion_resolved', mr_info=mr_info, file_path=file_path))
                 return True
 
             # 获取历史消息并进行评审
@@ -326,14 +315,14 @@ class ReviewManager:
             approved = llm_resp.get('approved', False)
             if approved:
                 await self._resolve_discussion(merge_request, discussion_id, project, change)
-                logger.info(f"合并请求 {mr_info} 文件 {file_path} 评审通过")
+                logger.info(i18n.t('log.discussion_approved', mr_info=mr_info, file_path=file_path))
             else:
-                logger.info(f"合并请求 {mr_info} 文件 {file_path} 评审未通过")
+                logger.info(i18n.t('log.discussion_rejected', mr_info=mr_info, file_path=file_path))
 
             return approved
 
         except Exception as e:
-            logger.error(f"更新讨论失败 (文件: {file_path}): {e}")
+            logger.error(i18n.t('response.update_discussion_failed', file_path=file_path, error=str(e)))
             return False
 
     async def _create_new_discussion(self, project: Project, merge_request: ProjectMergeRequest,
@@ -361,7 +350,7 @@ class ReviewManager:
             discussion = merge_request.discussions.create(discussion_data)
             discussion_id = discussion.id
 
-            logger.info(f"合并请求 {mr_info} 文件 {file_path} 讨论创建成功: {discussion_id}")
+            logger.info(i18n.t('log.discussion_created', mr_info=mr_info, file_path=file_path))
 
             # 保存记录
             create_review_discussion(project.id, merge_request.iid, discussion_id, file_path)
@@ -371,14 +360,14 @@ class ReviewManager:
             approved = llm_resp.get('approved', False)
             if approved:
                 await self._resolve_discussion(merge_request, discussion_id, project, change)
-                logger.info(f"合并请求 {mr_info} 文件 {file_path} 评审通过")
+                logger.info(i18n.t('log.discussion_approved', mr_info=mr_info, file_path=file_path))
             else:
-                logger.info(f"合并请求 {mr_info} 文件 {file_path} 评审未通过")
+                logger.info(i18n.t('log.discussion_rejected', mr_info=mr_info, file_path=file_path))
 
             return approved
 
         except Exception as e:
-            logger.error(f"创建讨论失败 (文件: {file_path}): {e}")
+            logger.error(i18n.t('response.create_discussion_failed', file_path=file_path, error=str(e)))
             return False
 
     async def _perform_llm_review(self, change: Dict[str, Any],
@@ -394,17 +383,27 @@ class ReviewManager:
                 {"role": "user", "content": get_file_user_prompt(change)}
             ]
 
-            return await asyncio.to_thread(self.llm_service.chat, messages)
+            result = await asyncio.to_thread(self.llm_service.chat, messages)
         except Exception as e:
-            logger.error(f"LLM评审失败: {e}")
+            logger.error(i18n.t('response.llm_service_error', error=str(e)))
             # 返回默认的拒绝结果
-            return {
+            result = {
                 'approved': False,
-                'issues': [f'LLM评审服务异常: {str(e)}'],
-                'suggestions': ['请检查LLM服务状态后重试'],
-                'score': 0,
-                'summary': 'LLM服务异常，无法完成评审'
+                'issues': [i18n.t('response.llm_service_error', error=str(e))],
+                'suggestions': [i18n.t('response.llm_service_retry_suggestion')],
+                'score': -1,
+                'summary': i18n.t('response.llm_service_error_summary')
             }
+        return await self._update_llm_resp(result)
+
+    @staticmethod
+    async def _update_llm_resp(llm_resp: Dict[str, Any]) -> dict:
+        """更新LLM响应"""
+        llm_resp.update(
+            {'issues': '\n'.join((f'{i}. {issue}' for i, issue in enumerate(llm_resp.get('issues', []), start=1)))})
+        llm_resp.update({'suggestions': '\n'.join(
+            (f'{i}. {suggestion}' for i, suggestion in enumerate(llm_resp.get('suggestions', []), start=1)))})
+        return llm_resp
 
     async def _save_discussion_records(self, discussion_id: str, llm_resp: Dict[str, Any],
                                        change: Dict[str, Any]):
@@ -431,7 +430,7 @@ class ReviewManager:
             )
 
         except Exception as e:
-            logger.error(f"保存讨论记录失败 (discussion_id: {discussion_id}): {e}")
+            logger.error(i18n.t('response.save_discussion_records_failed', discussion_id=discussion_id, error=str(e)))
 
     @staticmethod
     async def _resolve_discussion(merge_request: ProjectMergeRequest, discussion_id: str,
@@ -445,39 +444,41 @@ class ReviewManager:
             discussion.resolved = True
             discussion.save()
 
-            logger.debug(f"合并请求 {mr_info} 文件 {file_path} 讨论已标记为解决")
+            logger.debug(i18n.t('log.discussion_resolved', mr_info=mr_info, file_path=file_path))
+
         except Exception as e:
-            logger.error(f"解决讨论失败 (文件: {file_path}, discussion_id: {discussion_id}): {e}")
+            logger.error(i18n.t('response.resolve_discussion_failed', file_path=file_path, discussion_id=discussion_id,
+                                error=str(e)))
 
     @staticmethod
     async def _create_file_limit_notification(merge_request: ProjectMergeRequest, file_count: int):
         """创建文件数量限制通知"""
         try:
             notification_body = (
-                f"📢 **文件变更数量过多通知**\n\n"
-                f"本次合并请求包含 **{file_count}** 个文件变更，超过了单次评审限制（20个文件）。\n\n"
-                f"为了保证评审质量和系统性能，建议：\n"
-                f"1. 将大型变更拆分为多个较小的合并请求\n"
-                f"2. 确保每个合并请求专注于单一功能或修复\n"
-                f"3. 如有必要，可以手动触发部分文件的评审\n\n"
-                f"如需强制评审，请联系管理员。"
+                f"{i18n.t('notification.file_limit.title')}\n\n"
+                f"{i18n.t('notification.file_limit.content', file_count=file_count)}\n\n"
+                f"{i18n.t('notification.file_limit.suggestions_title')}\n"
+                f"1. {i18n.t('notification.file_limit.suggestion_1')}\n"
+                f"2. {i18n.t('notification.file_limit.suggestion_2')}\n"
+                f"3. {i18n.t('notification.file_limit.suggestion_3')}\n\n"
+                f"{i18n.t('notification.file_limit.footer')}"
             )
 
             merge_request.discussions.create({'body': notification_body})
-            logger.info(f"已创建文件数量限制通知，文件数: {file_count}")
+            logger.info(i18n.t('log.create_file_limit_notification', file_count=file_count))
         except Exception as e:
-            logger.error(f"创建文件数量限制通知失败: {e}")
+            logger.error(i18n.t('response.create_file_limit_notification_failed', file_count=file_count, error=str(e)))
 
     @staticmethod
     async def _approve_merge_request(project: Project, merge_request: ProjectMergeRequest):
         """批准合并请求"""
         try:
             mr_info = f"{project.path_with_namespace} (!{merge_request.iid})"
-            logger.info(f"合并请求 {mr_info} 所有文件代码评审通过，准备批准")
+            logger.info(i18n.t('log.mr_all_files_approved', mr_info=mr_info))
 
             update_or_create_review(project.id, merge_request.iid, ReviewStatus.APPROVED.value)
             merge_request.approve()
 
-            logger.info(f"合并请求 {mr_info} 已成功批准")
+            logger.info(i18n.t('log.mr_approved', mr_info=mr_info))
         except Exception as e:
-            logger.error(f"批准合并请求失败: {e}")
+            logger.error(i18n.t('response.approve_merge_request_failed', project_id=project.id, error=str(e)))

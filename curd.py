@@ -5,6 +5,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session as SessionType
 
 from config import Session
+from i18n import i18n
 from models import Review, ReviewDiscussion, ReviewFileRecord, ReviewFileLLMMessage
 
 
@@ -84,7 +85,9 @@ def update_or_create_review(
             session.commit()
             return review.id
     except SQLAlchemyError as e:
-        raise SQLAlchemyError(f"更新或创建评审记录失败: {e}")
+        raise SQLAlchemyError(
+            i18n.t('response.update_or_create_review_failed', project_id=project_id, merge_request_id=merge_request_id,
+                   error=str(e)))
 
 
 def get_review(project_id: int, merge_request_id: int) -> Optional[Review]:
@@ -101,7 +104,9 @@ def get_review(project_id: int, merge_request_id: int) -> Optional[Review]:
         with Session() as session:
             return _get_review_by_project_and_mr(session, project_id, merge_request_id)
     except SQLAlchemyError as e:
-        raise SQLAlchemyError(f"获取评审记录失败: {e}")
+        raise SQLAlchemyError(
+            i18n.t('response.get_review_failed', project_id=project_id, merge_request_id=merge_request_id,
+                   error=str(e)))
 
 
 def get_discussion_id(project_id: int, merge_request_id: int, file_path: str) -> Optional[str]:
@@ -129,7 +134,9 @@ def get_discussion_id(project_id: int, merge_request_id: int, file_path: str) ->
                 )
             )
     except SQLAlchemyError as e:
-        raise SQLAlchemyError(f"获取评审讨论ID失败: {e}")
+        raise SQLAlchemyError(
+            i18n.t('response.get_discussion_id_failed', project_id=project_id, merge_request_id=merge_request_id,
+                   file_path=file_path, error=str(e)))
 
 
 def create_review_discussion(
@@ -174,7 +181,9 @@ def create_review_discussion(
             session.commit()
             return discussion.id
     except SQLAlchemyError as e:
-        raise SQLAlchemyError(f"创建评审讨论记录失败: {e}")
+        raise SQLAlchemyError(
+            i18n.t('response.create_review_discussion_failed', discussion_id=discussion_id, file_path=file_path,
+                   error=str(e)))
 
 
 def get_review_discussion_id(discussion_id: str) -> Optional[int]:
@@ -192,7 +201,8 @@ def get_review_discussion_id(discussion_id: str) -> Optional[int]:
                 session, discussion_id
             )
     except SQLAlchemyError as e:
-        raise SQLAlchemyError(f"获取评审讨论记录ID失败: {e}")
+        raise SQLAlchemyError(
+            i18n.t('response.get_review_discussion_id_failed', discussion_id=discussion_id, error=str(e)))
 
 
 def create_review_file_record(
@@ -240,7 +250,8 @@ def create_review_file_record(
             session.add(file_record)
             session.commit()
     except SQLAlchemyError as e:
-        raise SQLAlchemyError(f"创建评审文件记录失败: {e}")
+        raise SQLAlchemyError(
+            i18n.t('response.create_review_file_record_failed', discussion_id=discussion_id, error=str(e)))
 
 
 def create_review_file_llm_message(discussion_id: str, role: str, content: str) -> None:
@@ -262,7 +273,7 @@ def create_review_file_llm_message(discussion_id: str, role: str, content: str) 
             )
 
             if not review_discussion_id:
-                raise ValueError(f"找不到讨论ID {discussion_id} 对应的评审讨论记录")
+                raise ValueError(i18n.t('response.get_review_discussion_id_failed', discussion_id=discussion_id))
 
             llm_message = ReviewFileLLMMessage(
                 review_discussion_id=review_discussion_id,
@@ -272,7 +283,8 @@ def create_review_file_llm_message(discussion_id: str, role: str, content: str) 
             session.add(llm_message)
             session.commit()
     except SQLAlchemyError as e:
-        raise SQLAlchemyError(f"创建评审文件LLM消息失败: {e}")
+        raise SQLAlchemyError(
+            i18n.t('response.create_review_file_llm_message_failed', discussion_id=discussion_id, error=str(e)))
 
 
 def get_review_file_llm_messages(discussion_id: str) -> List[Dict[str, str]]:
@@ -304,4 +316,5 @@ def get_review_file_llm_messages(discussion_id: str) -> List[Dict[str, str]]:
                 for message in messages
             ]
     except SQLAlchemyError as e:
-        raise SQLAlchemyError(f"获取评审文件LLM消息失败: {e}")
+        raise SQLAlchemyError(
+            i18n.t('response.get_review_file_llm_messages_failed', discussion_id=discussion_id, error=str(e)))
