@@ -39,7 +39,7 @@ class ReviewManager:
         self.llm_service = LLMService()
         self._semaphore = asyncio.Semaphore(self.MAX_CONCURRENT_REVIEWS)
 
-    def check(self) -> bool:
+    async def check(self) -> bool:
         """连接性检查"""
         try:
             self.gl.auth()
