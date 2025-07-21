@@ -121,7 +121,7 @@ def get_discussion_content(llm_resp: Dict[str, Any]) -> str:
         return _render_template('discussion_i18n.j2', **llm_resp)
     except TemplateNotFound:
         # 如果国际化模板不存在，使用默认模板
-        return _render_template('discussion.j2', llm_resp=llm_resp)
+        return _render_template('discussion.j2', **llm_resp)
 
 
 def deserialize_llm_resp(llm_resp: Dict[str, Any]) -> str:
