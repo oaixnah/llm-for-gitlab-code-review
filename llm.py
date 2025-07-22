@@ -6,6 +6,7 @@ from openai import OpenAI as OpenAIClient
 from openai.types.chat import ChatCompletion
 
 from config import settings
+from i18n import i18n
 from utils import parse_response
 
 # 配置日志
@@ -42,9 +43,9 @@ class Service:
                 base_url=api_url,
                 timeout=timeout
             )
-            logger.info(f"LLM服务初始化成功，模型: {model}")
+            logger.info(i18n.t("log.llm_service_init_success", model=model))
         except Exception as e:
-            logger.error(f"LLM服务初始化失败: {e}")
+            logger.error(i18n.t("log.llm_service_init_failed", error=e))
             raise
 
     def check(self) -> bool:
@@ -55,10 +56,10 @@ class Service:
         """
         try:
             self.client.models.retrieve(self.model)
-            logger.info(f"LLM服务检查通过，模型: {self.model}")
+            logger.info(i18n.t("log.llm_service_check_passed", model=self.model))
             return True
         except Exception as e:
-            logger.error(f"LLM服务检查失败: {e}")
+            logger.error(i18n.t("log.llm_service_check_failed", error=e))
             return False
 
     def chat(self, messages: List[Dict[str, str]], **kwargs) -> Dict:
@@ -76,7 +77,7 @@ class Service:
             Exception: 当API调用失败时
         """
         if not messages:
-            raise ValueError("消息列表不能为空")
+            raise ValueError(i18n.t("log.llm_empty_messages"))
 
         # 设置默认参数
         chat_params = {
@@ -93,34 +94,32 @@ class Service:
         # 重试机制
         for attempt in range(self.max_retries):
             try:
-                logger.info(f"发起LLM请求，尝试次数: {attempt + 1}/{self.max_retries}")
+                logger.info(i18n.t("log.llm_request_start", attempt=attempt + 1, max_retries=self.max_retries))
 
                 resp: ChatCompletion = self.client.chat.completions.create(**chat_params)
 
                 if not resp.choices or not resp.choices[0].message.content:
-                    raise ValueError("LLM返回空响应")
+                    raise ValueError(i18n.t("log.llm_empty_response"))
 
                 duration = time.time() - start_time
 
                 # 记录成功日志
-                logger.info(
-                    f"LLM请求成功，耗时: {duration:.2f}s, "
-                    f"tokens: {resp.usage.total_tokens if resp.usage else 'unknown'}"
-                )
+                tokens = resp.usage.total_tokens if resp.usage else 'unknown'
+                logger.info(i18n.t("log.llm_request_success", duration=duration, tokens=tokens))
 
                 return parse_response(resp.choices[0].message.content, duration)
 
             except Exception as e:
                 last_exception = e
-                logger.warning(f"LLM请求失败 (尝试 {attempt + 1}/{self.max_retries}): {e}")
+                logger.warning(i18n.t("log.llm_request_failed", attempt=attempt + 1, max_retries=self.max_retries, error=e))
 
                 # 如果不是最后一次尝试，等待一段时间再重试
                 if attempt < self.max_retries - 1:
                     wait_time = 2 ** attempt  # 指数退避
-                    logger.info(f"等待 {wait_time}s 后重试...")
+                    logger.info(i18n.t("log.llm_request_retry_wait", wait_time=wait_time))
                     time.sleep(wait_time)
 
         # 所有重试都失败了
         duration = time.time() - start_time
-        logger.error(f"LLM请求最终失败，总耗时: {duration:.2f}s")
+        logger.error(i18n.t("log.llm_request_final_failed", duration=duration))
         raise Exception(f"LLM请求失败，已重试{self.max_retries}次: {last_exception}")

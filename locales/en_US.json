@@ -64,7 +64,18 @@
     "discussion_created": "Merge request {mr_info} file {file_path} discussion created successfully",
     "create_file_limit_notification": "Created file limit notification, file count: {file_count}",
     "mr_all_files_approved": "Merge request {mr_info} all files approved",
-    "mr_approved": "Merge request {mr_info} automatically approved"
+    "mr_approved": "Merge request {mr_info} automatically approved",
+    "llm_service_init_success": "LLM service initialized successfully, model: {model}",
+    "llm_service_init_failed": "LLM service initialization failed: {error}",
+    "llm_service_check_passed": "LLM service check passed, model: {model}",
+    "llm_service_check_failed": "LLM service check failed: {error}",
+    "llm_request_start": "Starting LLM request, attempt: {attempt}/{max_retries}",
+    "llm_request_success": "LLM request successful, duration: {duration:.2f}s, tokens: {tokens}",
+    "llm_request_failed": "LLM request failed (attempt {attempt}/{max_retries}): {error}",
+    "llm_request_retry_wait": "Waiting {wait_time}s before retry...",
+    "llm_request_final_failed": "LLM request finally failed, total duration: {duration:.2f}s",
+    "llm_empty_messages": "Message list cannot be empty",
+    "llm_empty_response": "LLM returned empty response"
   },
   "status": {
     "accepted": "accepted",
@@ -81,6 +92,7 @@
     "get_review_failed": "Failed to get review record, project ID: {project_id}, merge request ID: {merge_request_id}, error: {error}",
     "get_discussion_id_failed": "Failed to get discussion ID, project ID: {project_id}, merge request ID: {merge_request_id}, file path: {file_path}, error: {error}",
     "create_review_discussion_failed": "Failed to create review discussion, discussion ID: {discussion_id}, file path: {file_path}, error: {error}",
+    "find_review_record_failed": "Review record not found, project ID: {project_id}, merge request ID: {merge_request_id}",
     "get_review_discussion_id_failed": "Failed to get review discussion record ID, discussion ID: {discussion_id}, error: {error}",
     "create_review_file_record_failed": "Failed to create review file record, discussion ID: {discussion_id}, error: {error}",
     "create_review_file_llm_message_failed": "Failed to create review file LLM message, discussion ID: {discussion_id}, error: {error}",
