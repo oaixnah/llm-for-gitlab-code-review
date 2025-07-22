@@ -54,7 +54,7 @@ class ReviewManager:
             logger.error(f"{i18n.t('log.gitlab_connection_failed')}: {e}")
             raise Exception(f"{i18n.t('log.gitlab_connection_failed')}: {e}")
 
-    def is_reviewer(self, event_data: Dict[str, Any]) -> bool:
+    async def is_reviewer(self, event_data: Dict[str, Any]) -> bool:
         """检查用户是否是审核者"""
         if self.reviewers is None:
             return False
@@ -396,13 +396,13 @@ class ReviewManager:
             }
         return await self._update_llm_resp(result)
 
-    @staticmethod
-    async def _update_llm_resp(llm_resp: Dict[str, Any]) -> dict:
+    async def _update_llm_resp(self, llm_resp: Dict[str, Any]) -> dict:
         """更新LLM响应"""
         llm_resp.update(
             {'issues': '\n'.join((f'{i}. {issue}' for i, issue in enumerate(llm_resp.get('issues', []), start=1)))})
         llm_resp.update({'suggestions': '\n'.join(
             (f'{i}. {suggestion}' for i, suggestion in enumerate(llm_resp.get('suggestions', []), start=1)))})
+        llm_resp.update({'model': self.llm_service.model})
         return llm_resp
 
     async def _save_discussion_records(self, discussion_id: str, llm_resp: Dict[str, Any],
@@ -412,8 +412,12 @@ class ReviewManager:
             # 保存评审记录
             create_review_file_record(
                 discussion_id=discussion_id,
-                llm_model=self.llm_service.model,
-                **llm_resp
+                approved=llm_resp.get('approved', False),
+                score=llm_resp.get('score', -1),
+                issues=llm_resp.get('issues', ''),
+                suggestions=llm_resp.get('suggestions', ''),
+                summary=llm_resp.get('summary', ''),
+                llm_model=llm_resp.get('model', '')
             )
 
             # 保存LLM消息记录 - 先保存用户消息，再保存助手回复

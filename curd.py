@@ -170,7 +170,7 @@ def create_review_discussion(
             )
 
             if not review_id:
-                raise ValueError(f"找不到项目ID {project_id} 和MR ID {merge_request_id} 对应的评审记录")
+                raise ValueError(i18n.t('response.find_review_record_failed', project_id=project_id, merge_request_id=merge_request_id))
 
             discussion = ReviewDiscussion(
                 review_id=review_id,
@@ -236,7 +236,7 @@ def create_review_file_record(
             )
 
             if not review_discussion_id:
-                raise ValueError(f"找不到讨论ID {discussion_id} 对应的评审讨论记录")
+                raise ValueError(i18n.t('response.get_review_discussion_id_failed', discussion_id=discussion_id))
 
             file_record = ReviewFileRecord(
                 review_discussion_id=review_discussion_id,

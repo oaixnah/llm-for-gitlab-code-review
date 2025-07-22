@@ -64,7 +64,18 @@
     "discussion_created": "合并请求 {mr_info} 文件 {file_path} 讨论创建成功",
     "create_file_limit_notification": "创建文件数量限制通知，文件数量: {file_count}",
     "mr_all_files_approved": "合并请求 {mr_info} 所有文件评审通过",
-    "mr_approved": "合并请求 {mr_info} 已自动批准"
+    "mr_approved": "合并请求 {mr_info} 已自动批准",
+    "llm_service_init_success": "LLM服务初始化成功，模型: {model}",
+    "llm_service_init_failed": "LLM服务初始化失败: {error}",
+    "llm_service_check_passed": "LLM服务检查通过，模型: {model}",
+    "llm_service_check_failed": "LLM服务检查失败: {error}",
+    "llm_request_start": "发起LLM请求，尝试次数: {attempt}/{max_retries}",
+    "llm_request_success": "LLM请求成功，耗时: {duration:.2f}s, tokens: {tokens}",
+    "llm_request_failed": "LLM请求失败 (尝试 {attempt}/{max_retries}): {error}",
+    "llm_request_retry_wait": "等待 {wait_time}s 后重试...",
+    "llm_request_final_failed": "LLM请求最终失败，总耗时: {duration:.2f}s",
+    "llm_empty_messages": "消息列表不能为空",
+    "llm_empty_response": "LLM返回空响应"
   },
   "status": {
     "accepted": "已接受",
@@ -81,6 +92,7 @@
     "get_review_failed": "获取评审记录失败，项目ID: {project_id}，合并请求ID: {merge_request_id}，错误: {error}",
     "get_discussion_id_failed": "获取讨论ID失败，项目ID: {project_id}，合并请求ID: {merge_request_id}，文件路径: {file_path}，错误: {error}",
     "create_review_discussion_failed": "创建评审讨论失败，讨论ID: {discussion_id}，文件路径: {file_path}，错误: {error}",
+    "find_review_record_failed": "找不到对应的评审记录，项目ID: {project_id}，合并请求ID: {merge_request_id}",
     "get_review_discussion_id_failed": "获取评审讨论记录ID失败，讨论ID: {discussion_id}，错误: {error}",
     "create_review_file_record_failed": "创建评审文件记录失败，讨论ID: {discussion_id}，错误: {error}",
     "create_review_file_llm_message_failed": "创建评审文件LLM消息失败，讨论ID: {discussion_id}，错误: {error}",
