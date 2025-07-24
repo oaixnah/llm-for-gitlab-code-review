@@ -3,6 +3,8 @@
 An automated GitLab code review tool powered by Large Language Models (LLM) that intelligently analyzes code changes and
 provides professional review feedback.
 
+![](assets/en.png)
+
 ## Features
 
 - 🤖 **Intelligent Code Review**: Automatically analyze code changes using LLM and provide professional review feedback
